@@ -12,8 +12,8 @@ https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE4873
 Proposed analysis:
 Planning to make heat-map or volcano plot in r to show expression of the genes.
 Libraries:
-ggplot
-GEOquery: to get the dataset in the R
+ggplot,
+GEOquery: to get the dataset in the R,
 Bioconductor Package 
 
 
