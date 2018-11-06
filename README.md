@@ -18,7 +18,7 @@ Bioconductor Package
 
 
 Proposed Timeline & Major milestones (or segments):
-Successfully loading the data into R- studio as data-frame.
+Successfully loading the data into R-studio as data-frame.
 
 
 User Interface:
