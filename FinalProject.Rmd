@@ -1,0 +1,44 @@
+---
+title: "FinalProject"
+author: "Samridhi"
+date: "11/21/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(GEOquery)
+
+library(ggplot2)
+
+library(heatmap.plus)
+gset <- getGEO("GSE4873", GSEMatrix = TRUE)
+
+if (length(gset) > 1) idx <- grep("GPL90", attr(gset, "names")) else idx <- 1
+gset <- gset[[idx]]
+
+
+ex <- exprs(gset) 
+
+dim(ex)
+
+head(ex)
+tail(ex)
+hist(ex, col = "gray", main="GSE4873-Histogram")
+exp = log2(ex)
+summary(exp)
+hist(exp)
+heatmap(ex, main = "Heatmap")
+
+wt = exp[,1:2]
+ko = exp[,3:4]
+
+for(i in 1 : nrow(ex)) { # For each gene : 
+  x = wt[i,] # WT of gene number i
+  y = ko[i,] # KO of gene number i
+  
+  # Compute t-test between the two conditions
+  t = t.test(x, y)
+}
+```
+
