@@ -42,4 +42,9 @@ Next Step: Try to remove NA, infinity and -Infinity values from the data.
 Normalize data by dividing mean of each column for each column
 try t-test after this.
 
+Milestone 3 ((11/27/18)
+Progess: Removed the NA, infinity and -Infinity values from the data, Fitted the data into guassian curve, t-test done and heatmap is generated.
+Next step: make volcano plot and shiny app(user web interface)
+
+
 
