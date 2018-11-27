@@ -37,7 +37,7 @@ Understand the data and figure out what are rows and columns
 Milestone 2 (11/20/18)
 Progress: I added gene Id as an additional factor in my dataset and now my data is easy to understand. (earlier it was like 1,2 &3 and not making any sense what I am looking at).
 I made histogram with the data which doesn't look like guassian. After that I did log2 transformation to convert the data into guassian curve.(data is still skewed to the left) 
-I made boxplot and heatmap with the data and failed to do T-test(it says that data is not logical because of the NA, Infinity and -inf)
+I made boxplot with the data and failed to do T-test(it says that data is not logical because of the NA, Infinity and -inf)
 Next Step: Try to remove NA, infinity and -Infinity values from the data.
 Normalize data by dividing mean of each column for each column
 try t-test after this.
