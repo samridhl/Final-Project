@@ -10,7 +10,7 @@ https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE4873
 
 
 Proposed analysis:
-Planning to make heat-map or volcano plot in r to show expression of the genes.
+Planning to make heat-map and volcano plot in r to show differential gene expression.
 Libraries:
 ggplot,
 GEOquery: to get the dataset in the R,
@@ -31,7 +31,7 @@ I was able to successfully convert the data into expression matrix by using the 
 Next Steps:
 Generate heatmap and Volcano-plot.
 Feedback:
-Add additional parameter to look at
+Add additional to look in the dataset.
 Understand the data and figure out what are rows and columns
 
 Milestone 2 (11/20/18)
