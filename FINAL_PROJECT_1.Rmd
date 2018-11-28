@@ -1,0 +1,105 @@
+---
+title: "Final_project_1"
+author: "Samridhi"
+date: "11/27/2018"
+output: 
+---
+
+```{r}
+myGSE = "GSE4873"  
+library(GEOquery)
+#Read data into R
+gset <- getGEO(myGSE, GSEMatrix =TRUE)
+
+
+if (length(gset) > 1) idx <- grep("GPL90", attr(gset, "names")) else idx <- 1
+
+
+gset <- gset[[idx]]
+
+
+ex <- exprs(gset) #This is the expression matrix
+class(ex)
+#removing non-logiacl values from R
+#ex <- ex[!rowSums(ex <150),]
+ex <- na.omit(ex)
+ex[!is.na(ex) & !is.infinite(ex) & !is.nan(ex)]
+ex[!is.na(ex) & !is.infinite(ex) & !is.nan(ex)]
+ex[is.na(ex)]<-0
+dim(ex)
+head(ex)
+class(ex)
+summary(ex)
+hist(ex)
+#behaviour of data set
+hist(ex, col = "blue", main="GSE4873-Histogram")
+#Applying Log2 transformation
+exp = log2(ex)
+#fitiing data into guassian curve
+exp <- exp[!rowSums(exp >14),]
+exp <- exp[!rowSums(exp < 0),]
+
+exp[!is.na(exp) & !is.infinite(exp) & !is.nan(exp)]
+exp[!is.na(exp) & !is.infinite(exp) & !is.nan(exp)]
+is.na(exp)<-sapply(exp, is.infinite)
+
+exp[is.na(exp)]<-0
+
+summary(exp)
+class(ex)
+
+
+#checking distribution of transformed data
+hist(exp, col = "blue", main="GSE4873-Histogram")
+class(exp)
+exp <- data.matrix(exp)
+class(exp)
+hist(exp)
+
+wt = exp[,1:2]
+class(wt)
+ko = exp[,3:4]
+# Empty list for the p-values
+pvalue = NULL 
+tstat = NULL
+
+for(i in 1 : nrow(exp)) { # For each gene : 
+  x = wt[i,] # WT of gene number i
+  y = ko[i,] # KO of gene number i
+  
+  # Compute t-test between the two conditions
+  t = t.test(x, y)
+  pvalue[i] = t$p.value
+  # Put the current t-statistic in the tstats list
+  tstat[i] = t$statistic
+}
+head(pvalue)
+# Histogram of p-values (-log10)
+hist(-log10(pvalue), col = "gray")
+#Volcano_plot
+plot( -log10(pvalue), main = "GSE4873 - Volcano")
+
+
+pvalue_cutoff = 0.05
+abline(h = -log10(pvalue_cutoff), col = "green", lwd = 3)
+#Filetring by p-value
+filter_by_pvalue = pvalue <= pvalue_cutoff
+dim(exp[filter_by_pvalue, ])
+
+filtered = exp[filter_by_pvalue,]
+# Cluster the rows (genes) & columns (samples) by correlation
+rowv = as.dendrogram(hclust(as.dist(1-cor(t(filtered)))))
+colv = as.dendrogram(hclust(as.dist(1-cor(filtered))))
+#heatmap
+heatmap(filtered, Rowv=rowv, Colv=colv, cexCol=0.7)
+
+# Save the heatmap to a PDF file
+pdf ("GSE48733_DE_Heatmap.pdf")
+heatmap(filtered, Rowv=rowv, Colv=colv, cexCol=0.7)
+dev.off()
+
+library(gplots)
+heatmap.2(filtered, Rowv=rowv, Colv=colv, cexCol=0.7,
+          col = rev(redblue(256)), scale = "row")
+```
+
