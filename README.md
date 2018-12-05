@@ -46,5 +46,11 @@ Milestone 3 ((11/27/18)
 Progess: Removed the NA, infinity and -Infinity values from the data, Fitted the data into guassian curve, t-test done and heatmap is generated.
 Next step: make volcano plot and shiny app(user web interface)
 
+Link to the webpage: 
+http://rpubs.com/samridhl/Final_project_TRGN510
+
+Link to shiny:
+https://samridhi.shinyapps.io/test2/
+
 
 
