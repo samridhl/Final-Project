@@ -6,63 +6,81 @@ output:
 ---
 
 ```{r}
-myGSE = "GSE4873"  
+if (!requireNamespace("BiocManager"))
+  install.packages("BiocManager")
+BiocManager::install()
+
+#Loading Library
 library(GEOquery)
+library(gplots)
+library(RColorBrewer)
+myGSE = "GSE4873" 
+
 #Read data into R
 gset <- getGEO(myGSE, GSEMatrix =TRUE)
-
-
 if (length(gset) > 1) idx <- grep("GPL90", attr(gset, "names")) else idx <- 1
-
-
 gset <- gset[[idx]]
-
-
-ex <- exprs(gset) #This is the expression matrix
+ex <- exprs(gset) #this is the expression matrix
 class(ex)
-#removing non-logiacl values from R
-#ex <- ex[!rowSums(ex <150),]
-ex <- na.omit(ex)
-ex[!is.na(ex) & !is.infinite(ex) & !is.nan(ex)]
-ex[!is.na(ex) & !is.infinite(ex) & !is.nan(ex)]
-ex[is.na(ex)]<-0
+
+#normalization
+colSums = apply(ex, 2, sum)  #get total intensity of each experiment
+colSums/1E6
+exnorm = ex  #just generate a template
+for( col in 1:length(ex[1,])) { #go over each column
+  exnorm[,col] = ex[,col] * max(colSums) / sum(ex[,col])
+  #    individual signals * maxExperimentTotal / Total Signal of the current experiment
+}
+apply(exnorm, 2, sum) / max(colSums)
+ex = exnorm 
 dim(ex)
 head(ex)
-class(ex)
 summary(ex)
-hist(ex)
+
 #behaviour of data set
-hist(ex, col = "blue", main="GSE4873-Histogram")
-#Applying Log2 transformation
+hist(ex, col = "blue", xlab = "Frequency of Expression", ylab = "# of spots", main="GSE4873-Histogram")
+
+#using log2 transformation
 exp = log2(ex)
-#fitiing data into guassian curve
-exp <- exp[!rowSums(exp >14),]
+
+#behaviour of data set
+hist(exp, col = "blue", xlab = "Frequency of Expression" , ylab = "# of spots" ,main="GSE4873-Histogram after Log2 transformation")
+
+#removing non-logical data
+exp<-exp[!rowSums(exp >14),]
 exp <- exp[!rowSums(exp < 0),]
-
-exp[!is.na(exp) & !is.infinite(exp) & !is.nan(exp)]
-exp[!is.na(exp) & !is.infinite(exp) & !is.nan(exp)]
-is.na(exp)<-sapply(exp, is.infinite)
-
-exp[is.na(exp)]<-0
-
-summary(exp)
-class(ex)
-
-
-#checking distribution of transformed data
-hist(exp, col = "blue", main="GSE4873-Histogram")
-class(exp)
 exp <- data.matrix(exp)
-class(exp)
-hist(exp)
 
+##fitiing data into guassian curve
+hist(exp, col = "green", xlab = "Frequency of Expression" , ylab = "# of spots", main="GSE4873-Histogram")
+
+#Boxplot
+boxplot(exp, col=c("darkgreen", "darkgreen",
+                   "darkred", "darkred"),
+        main="GSE4873 - boxplots", las=3)
+
+# Separate the two conditions into two smaller data frames
 wt = exp[,1:2]
 class(wt)
 ko = exp[,3:4]
+class(ko)
+
+# Compute the means of the samples of each condition
+wt.mean = apply(wt, 1, mean)
+ko.mean = apply(ko, 1, mean)
+
+# Just get the maximum of all the means
+limit = max(wt.mean, ko.mean)
+
+# Scatter plot
+plot(ko.mean ~ wt.mean, xlab = "WT(sample)", ylab = "KO(Control)",
+     main = "GSE4873 - Scatter", xlim = c(0, limit), ylim = c(0, limit))
+# Diagonal line
+abline(0, 1, col = "red")
+
 # Empty list for the p-values
 pvalue = NULL 
 tstat = NULL
-
 for(i in 1 : nrow(exp)) { # For each gene : 
   x = wt[i,] # WT of gene number i
   y = ko[i,] # KO of gene number i
@@ -74,31 +92,54 @@ for(i in 1 : nrow(exp)) { # For each gene :
   tstat[i] = t$statistic
 }
 head(pvalue)
+
 # Histogram of p-values (-log10)
-hist(-log10(pvalue), col = "gray")
-#Volcano_plot
-plot( -log10(pvalue), main = "GSE4873 - Volcano")
+hist(-log10(pvalue), ylab = "Frequency of Expression" ,col = "pink")
 
-
+# Compute fold-change (biological significance)
+# Difference between the means of the conditions
+fold = wt.mean - ko.mean
+fold_cutoff = 0.5
 pvalue_cutoff = 0.05
-abline(h = -log10(pvalue_cutoff), col = "green", lwd = 3)
-#Filetring by p-value
+
+## Fold-change filter for "biological" significance
+filter_by_fold = abs(fold) >= fold_cutoff
+dim(exp[filter_by_fold, ])
+
+# P-value filter for "statistical" significance
 filter_by_pvalue = pvalue <= pvalue_cutoff
 dim(exp[filter_by_pvalue, ])
-
 filtered = exp[filter_by_pvalue,]
+
+# Screen for the genes that satisfy the filtering criteria
+filter_combined = filter_by_fold & filter_by_pvalue
+
+# Combined filter (both biological and statistical)
+filtered_combined = exp[filter_combined,]
+
+# Let's generate the volcano plot again,
+# highlighting the significantly differential expressed genes
+plot(fold, -log10(pvalue), main = "GSE4873 - Volcano plot")
+points (fold[filter_combined], -log10(pvalue[filter_combined]),
+        pch = 16, col = "green")
+
+# Highlighting up-regulated in red and down-regulated in blue
+plot(fold, -log10(pvalue), main = "GSE4873 - Volcano #2")
+points (fold[filter_combined & fold < 0],
+        -log10(pvalue[filter_combined & fold < 0]),
+        pch = 16, col = "red")
+points (fold[filter_combined & fold > 0],
+        -log10(pvalue[filter_combined & fold > 0]),
+        pch = 16, col = "blue")
+
 # Cluster the rows (genes) & columns (samples) by correlation
 rowv = as.dendrogram(hclust(as.dist(1-cor(t(filtered)))))
 colv = as.dendrogram(hclust(as.dist(1-cor(filtered))))
-#heatmap
+
+# Generate a heatmap
 heatmap(filtered, Rowv=rowv, Colv=colv, cexCol=0.7)
 
-# Save the heatmap to a PDF file
-pdf ("GSE48733_DE_Heatmap.pdf")
-heatmap(filtered, Rowv=rowv, Colv=colv, cexCol=0.7)
-dev.off()
-
-library(gplots)
+#Enhanced heatmap
 heatmap.2(filtered, Rowv=rowv, Colv=colv, cexCol=0.7,
           col = rev(redblue(256)), scale = "row")
 ```
