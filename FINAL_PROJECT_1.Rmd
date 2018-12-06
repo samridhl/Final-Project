@@ -43,15 +43,15 @@ hist(ex, col = "blue", xlab = "Frequency of Expression", ylab = "# of spots", ma
 #using log2 transformation
 exp = log2(ex)
 
-#behaviour of data set
+#Behaviour of data set
 hist(exp, col = "blue", xlab = "Frequency of Expression" , ylab = "# of spots" ,main="GSE4873-Histogram after Log2 transformation")
 
-#removing non-logical data
+#Removing non-logical data
 exp<-exp[!rowSums(exp >14),]
 exp <- exp[!rowSums(exp < 0),]
 exp <- data.matrix(exp)
 
-##fitiing data into guassian curve
+##Fitting data into guassian curve
 hist(exp, col = "green", xlab = "Frequency of Expression" , ylab = "# of spots", main="GSE4873-Histogram")
 
 #Boxplot
@@ -118,7 +118,7 @@ filter_combined = filter_by_fold & filter_by_pvalue
 filtered_combined = exp[filter_combined,]
 
 # Let's generate the volcano plot again,
-# highlighting the significantly differential expressed genes
+# Highlighting the significantly differential expressed genes
 plot(fold, -log10(pvalue), main = "GSE4873 - Volcano plot")
 points (fold[filter_combined], -log10(pvalue[filter_combined]),
         pch = 16, col = "green")
